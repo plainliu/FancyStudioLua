@@ -10,6 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onLanguage:lua",
 		"onCommand:fancystudiolua.helloWorld"
 	],
 	"main": "./out/extension.js",
