@@ -43,7 +43,13 @@
 					"description": "Traces the communication between VS Code and the language server."
 				}
 			}
-		}
+		},
+		"snippets": [
+			{
+				"language": "lua",
+				"path": ""
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

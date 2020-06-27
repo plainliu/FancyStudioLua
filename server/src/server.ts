@@ -18,8 +18,12 @@ import {
 } from 'vscode-languageserver';
 
 import {
-	TextDocument
+	TextDocument,
 } from 'vscode-languageserver-textdocument';
+
+import * as os from 'os';
+import * as child_process from 'child_process';
+import * as path from 'path';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -154,31 +158,118 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 				end: textDocument.positionAt(m.index + m[0].length)
 			},
 			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
+			source: 'fslua'
 		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
+		// if (hasDiagnosticRelatedInformationCapability) {
+		// 	diagnostic.relatedInformation = [
+		// 		{
+		// 			location: {
+		// 				uri: textDocument.uri,
+		// 				range: Object.assign({}, diagnostic.range)
+		// 			},
+		// 			message: 'Spelling matters'
+		// 		},
+		// 		{
+		// 			location: {
+		// 				uri: textDocument.uri,
+		// 				range: Object.assign({}, diagnostic.range)
+		// 			},
+		// 			message: 'Particularly for names'
+		// 		}
+		// 	];
+		// }
 		diagnostics.push(diagnostic);
 	}
 
 	// Send the computed diagnostics to VSCode.
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+}
+
+// show info in problem panel
+function updateDiagnostics(document: TextDocument, errorMsg: string | void): void {
+	if (errorMsg) {
+		let errs: Diagnostic[] = [];
+        errorMsg.split('\n').forEach(err => {
+            let pos: any[] | null = /^line (\d+):(\d+)/.exec(err);
+            if (!pos || pos.length !== 3) { return; }
+            // LuaFormatter: row start from 1, col start from 0
+            pos = [parseInt(pos[1]) - 1, parseInt(pos[2])];
+            errs.push({
+                message: err,
+                range: {
+					start: new vscode.Position(pos[0], pos[1]),
+					end: new vscode.Position(pos[0], pos[1])
+				},
+                severity: DiagnosticSeverity.Error,
+            });
+        });
+		connection.sendDiagnostics({ uri: document.uri, errs });
+    } else {
+		connection.sendDiagnostics({ uri: document.uri, errs });
+    }
+}
+
+async function validateTextDocument1(textDocument: TextDocument): Promise<void> {
+	let data = textDocument.getText();
+
+	return new Promise((resolve, reject) => {
+		let configPath = vscode.workspace.getConfiguration().get<string>("vscode-lua-format.configPath");
+		let binaryPath = vscode.workspace.getConfiguration().get<string>("vscode-lua-format.binaryPath");
+
+		const args = [];
+
+		if (configPath) {
+			if (!path.isAbsolute(configPath) && vscode.workspace.rootPath) {
+				configPath = path.resolve(vscode.workspace.rootPath, configPath);
+			}
+			args.push("-c");
+			args.push(configPath);
+		}
+
+		if (!binaryPath) {
+			const platform = os.platform();
+			binaryPath = `${textDocument.extensionPath}/server/bin/`;
+			if (platform === "linux" || platform === "darwin" || platform === "win32") {
+				binaryPath += platform;
+			} else {
+				reject(`vscode-lua-format do not support '${platform}'.`);
+				return;
+			}
+			binaryPath += "/lua-format";
+		} else {
+			if (!path.isAbsolute(binaryPath) && vscode.workspace.rootPath) {
+				binaryPath = path.resolve(vscode.workspace.rootPath, binaryPath);
+			}
+		}
+		const cmd = child_process.spawn(binaryPath, args, {});
+		const result: Buffer[] = [], errorMsg: Buffer[] = [];
+		cmd.on('error', err => {
+			reject(err);
+		});
+		cmd.stdout.on('data', data => {
+			result.push(Buffer.from(data));
+		});
+		cmd.stderr.on('data', data => {
+			errorMsg.push(Buffer.from(data));
+		});
+		cmd.on('exit', code => {
+			const resultStr = Buffer.concat(result).toString();
+			const errorMsgStr = Buffer.concat(errorMsg).toString();
+			updateDiagnostics(textDocument, errorMsgStr);
+			if (code) {
+				reject();
+				return;
+			}
+			if (resultStr.length > 0) {
+				const range = textDocument.validateRange(new vscode.Range(0, 0, Infinity, Infinity));
+				resolve([new vscode.TextEdit(range, resultStr)]);
+			} else {
+				reject(`unexpected error: ${errorMsgStr}`);
+			}
+		});
+		cmd.stdin.write(data);
+		cmd.stdin.end();
+	});
 }
 
 connection.onDidChangeWatchedFiles(_change => {
