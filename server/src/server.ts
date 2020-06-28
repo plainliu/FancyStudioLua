@@ -14,12 +14,18 @@ import {
 	CompletionItemKind,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
-	InitializeResult
+	InitializeResult,
+	Position
 } from 'vscode-languageserver';
 
 import {
-	TextDocument
+	TextDocument,
 } from 'vscode-languageserver-textdocument';
+
+import * as os from 'os';
+import * as child_process from 'child_process';
+import * as path from 'path';
+import F3dFormatChecker from './f3dformatchecker';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -27,6 +33,7 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. 
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+let f3dformatter = new F3dFormatChecker()
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -105,7 +112,8 @@ connection.onDidChangeConfiguration(change => {
 	}
 
 	// Revalidate all open text documents
-	documents.all().forEach(validateTextDocument);
+	// documents.all().forEach(validateTextDocument);
+	documents.all().forEach(f3dValidateTextDocument);
 });
 
 function getDocumentSettings(resource: string): Thenable<FancyStudioLuaSettings> {
@@ -131,7 +139,8 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	validateTextDocument(change.document);
+	// validateTextDocument(change.document);
+	f3dValidateTextDocument(change.document);
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {
@@ -154,30 +163,51 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 				end: textDocument.positionAt(m.index + m[0].length)
 			},
 			message: `${m[0]} is all uppercase.`,
-			source: 'ex'
+			source: 'fslua'
 		};
-		if (hasDiagnosticRelatedInformationCapability) {
-			diagnostic.relatedInformation = [
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Spelling matters'
-				},
-				{
-					location: {
-						uri: textDocument.uri,
-						range: Object.assign({}, diagnostic.range)
-					},
-					message: 'Particularly for names'
-				}
-			];
-		}
+		// if (hasDiagnosticRelatedInformationCapability) {
+		// 	diagnostic.relatedInformation = [
+		// 		{
+		// 			location: {
+		// 				uri: textDocument.uri,
+		// 				range: Object.assign({}, diagnostic.range)
+		// 			},
+		// 			message: 'Spelling matters'
+		// 		},
+		// 		{
+		// 			location: {
+		// 				uri: textDocument.uri,
+		// 				range: Object.assign({}, diagnostic.range)
+		// 			},
+		// 			message: 'Particularly for names'
+		// 		}
+		// 	];
+		// }
 		diagnostics.push(diagnostic);
 	}
 
 	// Send the computed diagnostics to VSCode.
+	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+}
+
+async function f3dValidateTextDocument(textDocument: TextDocument): Promise<void> {
+	// The validator creates diagnostics for all uppercase words length 2 and more
+	let text = textDocument.getText();
+	let errs = f3dformatter.checkFormatErrorByFile(text)
+
+	let diagnostics: Diagnostic[] = [];
+	errs.forEach((res) => {
+		let diagnostic: Diagnostic = {
+			severity: DiagnosticSeverity.Warning,
+			range: {
+				start: Position.create(res.line, res.col),
+				end: Position.create(res.line, res.col)
+			},
+			message: `${res.err}`,
+			source: 'f3dlua'
+		};
+		diagnostics.push(diagnostic);
+	})
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
