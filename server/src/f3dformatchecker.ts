@@ -17,29 +17,29 @@ var singleLineErrors:Array<ErrorPattern> = [
 	{name: '行末多余空格', luapattern: ' $', pattern: / $/g},
 	{name: ')前多余空格', luapattern: ' %)', pattern: / \)/g},
 	{name: '(后多余空格', luapattern: '%( ', pattern: /\( /g},
-	{name: '}前多余空格', luapattern: ' %}', pattern: / }/g},
-	{name: '{后多余空格', luapattern: '%{ ', pattern: / }/g},
-	{name: ']前多余空格', luapattern: ' %]', pattern: / }/g},
-	{name: '[后多余空格', luapattern: '%[ ', pattern: / }/g},
-	{name: ',后缺少空格', luapattern: ',[^ \t]', pattern: /,[^ \t]/g},
+	{name: '}前多余空格', luapattern: ' %}', pattern: / \}/g},
+	{name: '{后多余空格', luapattern: '%{ ', pattern: /\{ /g},
+	{name: ']前多余空格', luapattern: ' %]', pattern: / \]/g},
+	{name: '[后多余空格', luapattern: '%[ ', pattern: /\[ /g},
+	{name: ',后缺少空格', luapattern: ',[^ \t]', pattern: /\,[^ \t]/g},
 	{name: '=前缺少空格', luapattern: '[^ ~=><]=', pattern: /[^ ~=><]\=/g},
 	{name: '=后缺少空格', luapattern: '=[^ =]', pattern: /=[^ =]/g},
-	{name: '+前缺少空格', luapattern: '[^ ]%+', pattern: /[^ ]%+/g},
-	{name: '+后缺少空格', luapattern: '%+[^ ]', pattern: /%+[^ ]/g},
-	{name: '-前缺少空格', luapattern: '[%)%a%d]%- [%(%a%d]', pattern: /[%)%a%d]%- [%(%a%d]/g},
+	{name: '+前缺少空格', luapattern: '[^ ]%+', pattern: /[^ ]\+/g},
+	{name: '+后缺少空格', luapattern: '%+[^ ]', pattern: /\+[^ ]/g},
+	{name: '-前缺少空格', luapattern: '[%)%a%d]%- [%(%a%d]', pattern: /[\)\w]\- [\(\w]/g},
 	// -- 暂时不对 -后缺少空格 的格式错误进行判断，因为没有办法区分 'number -1' 和 'or -1'
 	// -- {name = '-后缺少空格', luapattern = '[%)%a%d] %-[%(%a%d]'},
-	{name: '-前后缺少空格', luapattern: '[%)%a%d]%-[%(%a%d]', pattern: /[%)%a%d]%-[%(%a%d]/g},
-	{name: '*前缺少空格', luapattern: '[^ ]%*', pattern: /[^ ]%*/g},
-	{name: '*后缺少空格', luapattern: '%*[^ ]', pattern: /%*[^ ]/g},
-	{name: '/前缺少空格', luapattern: '[^ ]/', pattern: /[^ ]/g},
-	{name: '/后缺少空格', luapattern: '/[^ ]', pattern: /[^ ]/g},
-	{name: '>前缺少空格', luapattern: '[^ ]>', pattern: /[^ ]>/g},
-	{name: '>后缺少空格', luapattern: '>[^ =]', pattern: />[^ =]/g},
+	{name: '-前后缺少空格', luapattern: '[%)%a%d]%-[%(%a%d]', pattern: /[\)\w]\-[\(\w]/g},
+	{name: '*前缺少空格', luapattern: '[^ ]%*', pattern: /[^ ]\*/g},
+	{name: '*后缺少空格', luapattern: '%*[^ ]', pattern: /\*[^ ]/g},
+	{name: '/前缺少空格', luapattern: '[^ ]/', pattern: /[^ ]\//g},
+	{name: '/后缺少空格', luapattern: '/[^ ]', pattern: /[^ ]\//g},
+	{name: '>前缺少空格', luapattern: '[^ ]>', pattern: /[^ ]\>/g},
+	{name: '>后缺少空格', luapattern: '>[^ =]', pattern: /\>[^ =]/g},
 	{name: '<前缺少空格', luapattern: '[^ ]<', pattern: /[^ ]</g},
 	{name: '<后缺少空格', luapattern: '<[^ =]', pattern: /<[^ =]/g},
 	{name: '~=前缺少空格', luapattern: '[^ ]~=', pattern: /[^ ]~=/g},
-	{name: '..前后缺少空格', luapattern: '[^ %.]%.%.[^ %.]', pattern: /[^ %.]%.%.[^ %.]/g},
+	{name: '..前后缺少空格', luapattern: '[^ %.]%.%.[^ %.]', pattern: /[^ \.]\.\.[^ \.]/g},
 	{name: 'Tab空格错误使用', luapattern: '\t ', pattern: /\t /g},
 	{name: 'Tab错误使用', luapattern: '[^\t]\t', pattern: /[^\t]\t/g},
 	{name: ';错误使用', luapattern: ';', pattern: /;/g},
@@ -47,7 +47,7 @@ var singleLineErrors:Array<ErrorPattern> = [
 ]
 
 var multiLineErrors:Array<ErrorPattern> = [
-	{name: '多个连续空行', luapattern: '%*line%d+%*%*line(%d+)%*%*line%d+%*', pattern: /%*line%d+%*%*line(%d+)%*%*line%d+%*/g}
+	{name: '多个连续空行', luapattern: '%*line%d+%*%*line(%d+)%*%*line%d+%*', pattern: /\*line(\d+)\*\*line(\d+)\*\*line(\d+)\*/g}
 ]
 
 class F3dFormatChecker{
@@ -73,7 +73,6 @@ class F3dFormatChecker{
 		var errors:Array<F3dDiagnostic> = []
 		lines.forEach((line, lineindex) => {
 			this.singleLineErrors.forEach((errortype) => {
-				// var s = line.toString()
 				let m: RegExpExecArray | null;
 				while(m = errortype.pattern.exec(line)) {
 					errors.push({
@@ -89,7 +88,7 @@ class F3dFormatChecker{
 	checkFormatErrorInString(str:String){
 		var errors:Array<F3dDiagnostic> = []
 		let l = 0
-		str = str.replace(/\n/g, (endofline) => {
+		str = str.replace(/\n/g, () => {
 			l = l + 1
 			return '*line' + l + '*'
 		})
@@ -97,10 +96,9 @@ class F3dFormatChecker{
 			var s = str.toString()
 			let m: RegExpExecArray | null;
 			while(m = errortype.pattern.exec(s)) {
-				let r = m[0].match(/\*line(%d)\*/)
-				console.log(r)
+				let r = m[0].match(/\*line(\d+)\*/)
 				errors.push({
-					line: 0,
+					line: Number((r && r[1]) || 0),
 					col: 0,
 					err: errortype.name,
 				})
@@ -112,20 +110,6 @@ class F3dFormatChecker{
 		let multiLineErrors = this.checkFormatErrorInString(str)
 		let singleLineErrors = this.checkFormatErrorInLines(str.split('\n'))
 		var lineErrors:Array<F3dDiagnostic> = singleLineErrors.concat(multiLineErrors)
-		// var lineErrors:Array<F3dDiagnostic> = []
-		// let i = 1, j = 1
-		// while (multiLineErrors[i] || singleLineErrors[j]) {
-		// 	if ((!multiLineErrors[i] && singleLineErrors[j]) ||
-		// 		(multiLineErrors[i] && singleLineErrors[j] && multiLineErrors[i].line >= singleLineErrors[j].line)) {
-		// 			lineErrors.push(singleLineErrors[j])
-		// 			j = j + 1
-		// 	} else if (multiLineErrors[i] && !singleLineErrors[j] ||
-		// 		(multiLineErrors[i] && singleLineErrors[j] && multiLineErrors[i].line < singleLineErrors[j].line)) {
-		// 			lineErrors.push(multiLineErrors[i])
-		// 			i = i + 1
-		// 	}
-		// }
-	
 		return lineErrors
 	}
 	checkFormatErrorByFile(text: String){
@@ -158,7 +142,7 @@ class F3dFormatChecker{
 	
 		// -- 将[[]]内的内容转换为空，不检查字符串中的代码格式。
 		// -- 内容转换为空，但换行不能去掉，否则会出现行数错误。
-		text = text.replace(/\[\[(.-)\]\]/g, (comment) => {
+		text = text.replace(/\[\[(.*)\]\]/g, (comment) => {
 			let r = "[["
 	
 			while (/\n/g.exec(comment)){
@@ -166,6 +150,7 @@ class F3dFormatChecker{
 				r = r + '1\n'
 			}
 			r = r + "]]"
+			console.log(comment, r)
 			return r
 		})
 
