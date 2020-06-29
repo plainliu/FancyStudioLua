@@ -139,24 +139,24 @@ class F3dFormatChecker{
 		// -- 将""内的内容转换为空，不检查字符串中的代码格式。
 		// text = string.gsub(text, "\"[^\"]*\"", "\"\"")
 		text = text.replace(/\"[^\"]*\"/g, '\"\"')
-	
+
 		// -- 将[[]]内的内容转换为空，不检查字符串中的代码格式。
 		// -- 内容转换为空，但换行不能去掉，否则会出现行数错误。
-		text = text.replace(/\[\[(.*)\]\]/g, (comment) => {
-			let r = "[["
-	
-			while (/\n/g.exec(comment)){
+		// text = text.replace(/\[\[(\s|\S)+\]\]/g, (comment) => {
+		text = text.replace(/\[\[[\s\S]+?\]\]/g, (comment) => {
+			let n = /\n/g
+			var r = "[["
+			while (n.exec(comment)){
 				// -- 防止出现多个空行的错误。
-				r = r + '1\n'
+				r = r + "1\n"
 			}
 			r = r + "]]"
-			console.log(comment, r)
 			return r
 		})
 
 		// -- 将--后的注释内容转换为空，不检查注释中的代码格式。
 		// str = string.gsub(str, '%-%-[^\n]+\n', '--\n')
-		text = text.replace(/\-\-(.+)\n/g, '--\n')
+		text = text.replace(/\-\-(.+)(\n|$)/g, '--\n')
 
 		return this.checkFormatError(text)
 	}
