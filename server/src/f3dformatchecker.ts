@@ -47,7 +47,7 @@ var singleLineErrors:Array<ErrorPattern> = [
 ]
 
 var multiLineErrors:Array<ErrorPattern> = [
-	{name: '多个连续空行', luapattern: '%*line%d+%*%*line(%d+)%*%*line%d+%*', pattern: /\*line(\d+)\*\*line(\d+)\*\*line(\d+)\*/g}
+	{name: '多个连续空行', luapattern: '%*line%d+%*%*line(%d+)%*%*line%d+%*', pattern: /(\*line(\d+)\*){3,}/g}
 ]
 
 class F3dFormatChecker{
@@ -156,8 +156,8 @@ class F3dFormatChecker{
 
 		// -- 将--后的注释内容转换为空，不检查注释中的代码格式。
 		// str = string.gsub(str, '%-%-[^\n]+\n', '--\n')
-		text = text.replace(/\-\-[^\n]+\n/g, '--\n')
-	
+		text = text.replace(/\-\-(.+)\n/g, '--\n')
+
 		return this.checkFormatError(text)
 	}
 	checkFormatErrorByPath(){}
