@@ -1,14 +1,15 @@
 {
 	"name": "fancystudiolua",
-	"description": "FancyStudioLua",
-	"author": "liujuanjuan",
+	"description": "Fancy Studio Lua",
+	"author": "plainliu",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/plainliu/FancyStudioLua"
 	},
-	"publisher": "liujuanjuan",
+	"publisher": "plainliu",
+	"icon": "icon.png",
 	"categories": [],
 	"keywords": [
 		"multi-root ready"
