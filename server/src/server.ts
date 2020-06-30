@@ -22,9 +22,6 @@ import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
 
-import * as os from 'os';
-import * as child_process from 'child_process';
-import * as path from 'path';
 import F3dFormatChecker from './f3dformatchecker';
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -104,7 +101,17 @@ let documentSettings: Map<string, Thenable<FancyStudioLuaSettings>> = new Map();
 connection.onDidChangeConfiguration(change => {
 	if (hasConfigurationCapability) {
 		// Reset all cached document settings
-		documentSettings.clear();
+		documentSettings.clear()
+
+		documents.all().forEach((document) => {
+			let settings = getDocumentSettings(document.uri);
+			settings.then((s) => {
+				if (s.isCheckF3dFormat === false) { 
+					let diagnostics: Diagnostic[] = [];
+					connection.sendDiagnostics({ uri: document.uri, diagnostics })
+				}
+			})
+		})
 	} else {
 		globalSettings = <FancyStudioLuaSettings>(
 			(change.settings.FancyStudioLua || defaultSettings)
