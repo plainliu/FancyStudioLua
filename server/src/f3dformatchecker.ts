@@ -135,24 +135,22 @@ class F3dFormatChecker{
 
 		// -- 将''内的内容转换为空，不检查字符串中的代码格式。
 		// text = string.gsub(text, '\'[^\']*\'', '\'\'')
-		text = text.replace(/\'[^\']*\'/g, '\'\'')
+		text = text.replace(/\'[^\']*\'/g, (str) => {
+			console.log('substring""---', str, str.substring(1, str.length - 1))
+			return "'" + str.substring(1, str.length - 1).replace(/./g, '1') + "'"
+		})
 
 		// -- 将""内的内容转换为空，不检查字符串中的代码格式。
 		// text = string.gsub(text, "\"[^\"]*\"", "\"\"")
-		text = text.replace(/\"[^\"]*\"/g, '\"\"')
+		text = text.replace(/\"[^\"]*\"/g, (str) => {
+			console.log('substring2""---', str, str.substring(1, str.length - 1))
+			return '"' + str.substring(1, str.length - 1).replace(/./g, '1') + '"'
+		})
 
 		// -- 将[[]]内的内容转换为空，不检查字符串中的代码格式。
 		// -- 内容转换为空，但换行不能去掉，否则会出现行数错误。
-		// text = text.replace(/\[\[(\s|\S)+\]\]/g, (comment) => {
-		text = text.replace(/\[\[[\s\S]+?\]\]/g, (comment) => {
-			let n = /\n/g
-			var r = "[["
-			while (n.exec(comment)){
-				// -- 防止出现多个空行的错误。
-				r = r + "1\n"
-			}
-			r = r + "]]"
-			return r
+		text = text.replace(/\[\[[\s\S]+?\]\]/g, (str) => {
+			return '[[' + str.substring(2, str.length - 2).replace(/./gm, '1') + ']]'
 		})
 
 		// -- 将--后的注释内容转换为空，不检查注释中的代码格式。

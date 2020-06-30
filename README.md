@@ -22,7 +22,15 @@ FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode �
 
 ### 1.0.0
 
-发布VSCode插件FancyStudioLua，提供以F3D的lua检查规则检查lua的功能，通过配置中开关可打开关闭。
+- 优化注释和字符串的处理，提高定位准确度；
+
+- 正式发布。
+
+### 0.1.0
+
+- 发布VSCode插件FancyStudioLua，提供以F3D的lua检查规则检查lua的功能，通过配置中开关可打开关闭；
+
+- 测试发布。
 
 ## 引用 (References)
 
