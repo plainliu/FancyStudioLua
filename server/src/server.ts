@@ -89,13 +89,13 @@ connection.onInitialized(() => {
 
 // The FancyStudioLua settings
 interface FancyStudioLuaSettings {
-	maxNumberOfProblems: number;
+	isCheckF3dFormat: boolean;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: FancyStudioLuaSettings = { maxNumberOfProblems: 1000 };
+const defaultSettings: FancyStudioLuaSettings = { isCheckF3dFormat: true };
 let globalSettings: FancyStudioLuaSettings = defaultSettings;
 
 // Cache the settings of all open documents
@@ -112,7 +112,6 @@ connection.onDidChangeConfiguration(change => {
 	}
 
 	// Revalidate all open text documents
-	// documents.all().forEach(validateTextDocument);
 	documents.all().forEach(f3dValidateTextDocument);
 });
 
@@ -139,59 +138,13 @@ documents.onDidClose(e => {
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
-	// validateTextDocument(change.document);
 	f3dValidateTextDocument(change.document);
 });
 
-async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-	// In this simple example we get the settings for every validate run.
-	let settings = await getDocumentSettings(textDocument.uri);
-
-	// The validator creates diagnostics for all uppercase words length 2 and more
-	let text = textDocument.getText();
-	let pattern = /\b[A-Z]{2,}\b/g;
-	let m: RegExpExecArray | null;
-
-	let problems = 0;
-	let diagnostics: Diagnostic[] = [];
-	while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-		problems++;
-		let diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: textDocument.positionAt(m.index),
-				end: textDocument.positionAt(m.index + m[0].length)
-			},
-			message: `${m[0]} is all uppercase.`,
-			source: 'fslua'
-		};
-		// if (hasDiagnosticRelatedInformationCapability) {
-		// 	diagnostic.relatedInformation = [
-		// 		{
-		// 			location: {
-		// 				uri: textDocument.uri,
-		// 				range: Object.assign({}, diagnostic.range)
-		// 			},
-		// 			message: 'Spelling matters'
-		// 		},
-		// 		{
-		// 			location: {
-		// 				uri: textDocument.uri,
-		// 				range: Object.assign({}, diagnostic.range)
-		// 			},
-		// 			message: 'Particularly for names'
-		// 		}
-		// 	];
-		// }
-		diagnostics.push(diagnostic);
-	}
-
-	// Send the computed diagnostics to VSCode.
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
-
 async function f3dValidateTextDocument(textDocument: TextDocument): Promise<void> {
-	// The validator creates diagnostics for all uppercase words length 2 and more
+	let settings = await getDocumentSettings(textDocument.uri);
+	if (settings.isCheckF3dFormat === false) { return }
+
 	let text = textDocument.getText();
 	let errs = f3dformatter.checkFormatErrorByFile(text)
 
@@ -223,16 +176,16 @@ connection.onCompletion(
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
 		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
+			// {
+			// 	label: 'TypeScript',
+			// 	kind: CompletionItemKind.Text,
+			// 	data: 1
+			// },
+			// {
+			// 	label: 'JavaScript',
+			// 	kind: CompletionItemKind.Text,
+			// 	data: 2
+			// }
 		];
 	}
 );
@@ -241,13 +194,13 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
+		// if (item.data === 1) {
+		// 	item.detail = 'TypeScript details';
+		// 	item.documentation = 'TypeScript documentation';
+		// } else if (item.data === 2) {
+		// 	item.detail = 'JavaScript details';
+		// 	item.documentation = 'JavaScript documentation';
+		// }
 		return item;
 	}
 );
