@@ -106,9 +106,8 @@ connection.onDidChangeConfiguration(change => {
 		documents.all().forEach((document) => {
 			let settings = getDocumentSettings(document.uri);
 			settings.then((s) => {
-				if (s.isCheckF3dFormat === false) { 
-					let diagnostics: Diagnostic[] = [];
-					connection.sendDiagnostics({ uri: document.uri, diagnostics })
+				if (s.isCheckF3dFormat === false) {
+					clearDocumentDiagnostics(document)
 				}
 			})
 		})
@@ -139,6 +138,7 @@ function getDocumentSettings(resource: string): Thenable<FancyStudioLuaSettings>
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
+	clearDocumentDiagnostics(e.document)
 	documentSettings.delete(e.document.uri);
 });
 
@@ -168,6 +168,11 @@ async function f3dValidateTextDocument(textDocument: TextDocument): Promise<void
 		};
 		diagnostics.push(diagnostic);
 	})
+	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+}
+
+async function clearDocumentDiagnostics(textDocument: TextDocument):Promise<void> {
+	let diagnostics: Diagnostic[] = [];
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }
 
