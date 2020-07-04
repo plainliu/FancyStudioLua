@@ -3,7 +3,7 @@
 	"description": "Fancy Studio Lua",
 	"author": "plainliu",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/plainliu/FancyStudioLua"
@@ -12,7 +12,7 @@
 	"icon": "icon.png",
 	"categories": [],
 	"keywords": [
-		"multi-root ready"
+		"f3d", "fancyguo"
 	],
 	"engines": {
 		"vscode": "^1.43.0"
