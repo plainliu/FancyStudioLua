@@ -8,3 +8,6 @@ local s2 = 'a+b'
 local s = [[
 	文本 
 ]]
+
+-- 允许句末tab之后加注释
+local a = 1						-- 注释 a=1

@@ -13,12 +13,14 @@ suite('Should get diagnostics', () => {
 		await testDiagnostics(docUri, []);
 	});
 
-	test('Diagnoses ignore texts', async () => {
+	test('Diagnoses error texts', async () => {
 		const docUri = getDocUri('f3dFormatChecker/error.test.lua');
 		await testDiagnostics(docUri, [
 			{ message: '行末多余Tab', range: toRange(4, 1, 4, 1), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
-			{ message: 'Tab错误使用', range: toRange(4, 0, 4, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
 			{ message: 'Tab空格错误使用', range: toRange(5, 0, 5, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
+			{ message: '空格Tab错误使用', range: toRange(6, 0, 6, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
+			{ message: 'Tab错误使用', range: toRange(13, 6, 13, 6), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
+			{ message: 'Tab错误使用', range: toRange(14, 6, 14, 6), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
 			{ message: '多个连续空行', range: toRange(1, 0, 1, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' }
 		]);
 	});
@@ -63,7 +65,7 @@ suite('Should get diagnostics', () => {
 	test('Diagnoses bugs', async () => {
 		const docUri = getDocUri('f3dFormatChecker/bug.test.lua');
 		await testDiagnostics(docUri, [
-			{ message: ')前多余空格', range: toRange(8, 15, 8, 15), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
+			{ message: ')前多余空格', range: toRange(7, 14, 7, 14), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
 		]);
 	});
 });

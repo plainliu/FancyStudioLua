@@ -42,7 +42,8 @@ var singleLineErrors:Array<ErrorPattern> = [
 	{name: '..前缺少空格', luapattern: '[^ %.]%.%.[^%.]', pattern: /[^ \.]\.\.[^\.]/g},
 	{name: '..后缺少空格', luapattern: '[^%.]%.%.[^ %.]', pattern: /[^\.]\.\.[^ \.]/g},
 	{name: 'Tab空格错误使用', luapattern: '\t ', pattern: /\t /g},
-	{name: 'Tab错误使用', luapattern: '[^\t]\t', pattern: /[^\t]\t/g},
+	{name: '空格Tab错误使用', luapattern: ' \t', pattern: / \t/g},
+	{name: 'Tab错误使用', luapattern: '[^\t]\t', pattern: /[^\t ^]\t{1,}((?!(\-\-$))[^\t]+)/g},
 	{name: ';错误使用', luapattern: ';', pattern: /;/g},
 	{name: ',前多余空格', luapattern: ' ,', pattern: / ,/g},
 ]
