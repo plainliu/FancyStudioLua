@@ -23,7 +23,7 @@ suite('Should get diagnostics', () => {
 		]);
 	});
 
-	test('Diagnoses ignore texts', async () => {
+	test('Diagnoses lua exp', async () => {
 		const docUri = getDocUri('f3dFormatChecker/experror.test.lua');
 		await testDiagnostics(docUri, [
 			{ message: '+前缺少空格', range: toRange(1, 0, 1, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
@@ -57,6 +57,13 @@ suite('Should get diagnostics', () => {
 			{ message: '{后多余空格', range: toRange(19, 0, 19, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
 			{ message: ';错误使用', range: toRange(21, 0, 21, 0), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
 			{ message: ',前多余空格', range: toRange(23, 1, 23, 1), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' }
+		]);
+	});
+
+	test('Diagnoses bugs', async () => {
+		const docUri = getDocUri('f3dFormatChecker/bug.test.lua');
+		await testDiagnostics(docUri, [
+			{ message: ')前多余空格', range: toRange(8, 15, 8, 15), severity: vscode.DiagnosticSeverity.Warning, source: 'f3dlua' },
 		]);
 	});
 });

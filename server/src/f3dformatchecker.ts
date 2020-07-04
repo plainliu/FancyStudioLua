@@ -135,15 +135,13 @@ class F3dFormatChecker{
 
 		// -- 将''内的内容转换为空，不检查字符串中的代码格式。
 		// text = string.gsub(text, '\'[^\']*\'', '\'\'')
-		text = text.replace(/\'[^\']*\'/g, (str) => {
-			console.log('substring""---', str, str.substring(1, str.length - 1))
+		text = text.replace(/\'[^\'\n]*\'/g, (str) => {
 			return "'" + str.substring(1, str.length - 1).replace(/./g, '1') + "'"
 		})
 
 		// -- 将""内的内容转换为空，不检查字符串中的代码格式。
 		// text = string.gsub(text, "\"[^\"]*\"", "\"\"")
-		text = text.replace(/\"[^\"]*\"/g, (str) => {
-			console.log('substring2""---', str, str.substring(1, str.length - 1))
+		text = text.replace(/\"[^\"\n]*\"/g, (str) => {
 			return '"' + str.substring(1, str.length - 1).replace(/./g, '1') + '"'
 		})
 
