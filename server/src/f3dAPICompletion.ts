@@ -16,7 +16,7 @@ class F3dAPICompletion {
 	}
 
 	initAPILabels() {
-		this._apilabels = this._apiparser.genLabels(this._apiversion)
+		this._apilabels = this._apiparser.getAPILabels()
 	}
 
 	setApiVersion(version: string) {
@@ -24,30 +24,25 @@ class F3dAPICompletion {
 	}
 
 	apiCompletionLabels(): CompletionItem[] {
-		// if (_textDocumentPosition.position.character - 1 == '.' || ':')
-		// 	functions
-		return [
-			{
-				label: '_File',
+		let items:CompletionItem[] = []
+		this._apiparser.getAPILabels().forEach((v) => {
+			items.push({
+				label: v,
 				kind: CompletionItemKind.Text,
 				data: 1
-			},
-			{
-				label: '_String',
-				kind: CompletionItemKind.Text,
-				data: 2
-			}
-		];
+			})
+		})
+		return items
 	}
 
 	onApiCompletion(item: CompletionItem) {
-		if (item.data === 1) {
-			item.detail = '_File details';
-			item.documentation = '_File documentation';
-		} else if (item.data === 2) {
-			item.detail = '_String details';
-			item.documentation = '_String documentation';
-		}
+		// if (item.data === 1) {
+		// 	item.detail = '_File details';
+		// 	item.documentation = '_File documentation';
+		// } else if (item.data === 2) {
+		// 	item.detail = '_String details';
+		// 	item.documentation = '_String documentation';
+		// }
 	}
 }
 
