@@ -23,6 +23,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import F3dFormatChecker from './f3dformatchecker';
+import F3dAPICompletion from './f3dAPICompletion';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -31,6 +32,7 @@ let connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager. 
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let f3dformatter = new F3dFormatChecker()
+let f3dapicompletion = new F3dAPICompletion()
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -187,18 +189,7 @@ connection.onCompletion(
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return [
-			// {
-			// 	label: 'TypeScript',
-			// 	kind: CompletionItemKind.Text,
-			// 	data: 1
-			// },
-			// {
-			// 	label: 'JavaScript',
-			// 	kind: CompletionItemKind.Text,
-			// 	data: 2
-			// }
-		];
+		return f3dapicompletion.apiCompletionLabels();
 	}
 );
 
@@ -206,13 +197,7 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		// if (item.data === 1) {
-		// 	item.detail = 'TypeScript details';
-		// 	item.documentation = 'TypeScript documentation';
-		// } else if (item.data === 2) {
-		// 	item.detail = 'JavaScript details';
-		// 	item.documentation = 'JavaScript documentation';
-		// }
+		f3dapicompletion.onApiCompletion(item);
 		return item;
 	}
 );
