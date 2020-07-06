@@ -17,8 +17,9 @@ function isFileSync(aPath:string) {
 }
 
 class APIParser {
+	private _apipath = __dirname + '/../../src/api/'
 	private _apilist: Map<string, APILabel> = new Map();
-	private _apiversion: string = 'test';
+	private _apiversion: string = 'default';
 
 	constructor() {
 		console.log('APIParser')
@@ -27,7 +28,7 @@ class APIParser {
 	genLabel(): APILabel {
 		console.log('genLabels(apiversion)', this._apiversion)
 		let labels:Array<string> = [];
-		let path = __dirname + '/server/src/api/' + this._apiversion + '/_Class.json'
+		let path = this._apipath + this._apiversion + '/_Class.json'
 		if (isFileSync(path)) {
 			let api:Object = JSON.parse(fs.readFileSync(path, "utf8"));
 			Object.keys(api).forEach((key) => {

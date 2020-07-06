@@ -6,7 +6,7 @@ import {
 import APIParser from './api/APIParser';
 
 class F3dAPICompletion {
-	private _apiversion: string = 'test'
+	private _apiversion: string = 'default'
 	private _apiparser: APIParser = new APIParser()
 	private _apilabels: Array<string> = []
 
