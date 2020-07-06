@@ -3,3 +3,5 @@ node_modules
 vsixreleases
 client/server
 .vscode-test
+fancy3d.fob
+fancy-dev.exe
