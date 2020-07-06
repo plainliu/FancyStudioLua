@@ -2,10 +2,14 @@
 **/*.ts
 **/*.map
 .gitignore
+vsixreleases
 **/tsconfig.json
 **/tsconfig.base.json
 contributing.md
 .travis.yml
+**/test/**
+**/testFixture/**
+server/src/api/apitool/**
 client/node_modules/**
 !client/node_modules/vscode-jsonrpc/**
 !client/node_modules/vscode-languageclient/**
