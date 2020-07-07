@@ -42,6 +42,7 @@ interface APILabel{
 	label: string,
 	doc:string,
 	srcclass?:string,
+	issingleton?:boolean,
 };
 
 function isFileSync(aPath:string) {
@@ -81,7 +82,8 @@ class APIParser {
 					labels.push({
 						label: clsapi.singleton.apiname,
 						doc: clsapi.singleton.brief,
-						srcclass: clsname
+						srcclass: clsname,
+						issingleton:true
 					})
 				}
 				if (clsapi.vars) {
@@ -125,7 +127,15 @@ class APIParser {
 		let api = this._apilist.get(this._apiversion)
 		let apilabel = api && api[index]
 		if (apilabel) {
-			return apilabel.srcclass ? apilabel.srcclass + ': ' + apilabel.label : apilabel.label;
+			let s = ''
+			if (apilabel.srcclass) {
+				s += apilabel.srcclass
+				if (apilabel.issingleton) {
+					s += '单例'
+				}
+				s += ': '
+			}
+			return s + apilabel.label;
 		}
 		return '暂无'
 	}
@@ -133,6 +143,7 @@ class APIParser {
 		let api = this._apilist.get(this._apiversion)
 		let apilabel = api && api[index]
 		if (apilabel) {
+			// TODO: 参数信息
 			return apilabel.doc;
 		}
 		return '待补充'
