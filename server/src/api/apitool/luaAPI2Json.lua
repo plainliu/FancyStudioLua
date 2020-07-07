@@ -41,7 +41,11 @@ _sys:enumFile(luaApiFolder, true, function(f)
 	local api = _dofile(luaApiFolder .. '\\' .. f)
 	if api == nil then return end
 
-	apis[_sys:getFileName(f, false, false)] = api
+	if api and api.class then
+		api.class.classname = _sys:getFileName(f, false, false)
+	end
+	table.insert(apis, api)
+	-- apis[_sys:getFileName(f, false, false)] = api
 end)
 
 local jsontxt = JSON.encode(apis)

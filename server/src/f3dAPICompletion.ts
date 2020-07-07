@@ -8,16 +8,16 @@ import APIParser from './api/APIParser';
 class F3dAPICompletion {
 	private _apiversion: string = 'default'
 	private _apiparser: APIParser = new APIParser()
-	private _apilabels: Array<string> = []
+	// private _apilabels: Array<string> = []
 
 	constructor() {
 		console.log('F3dAPICompletion')
-		this.initAPILabels()
+		// this.initAPILabels()
 	}
 
-	initAPILabels() {
-		this._apilabels = this._apiparser.getAPILabels()
-	}
+	// initAPILabels() {
+	// 	this._apilabels = this._apiparser.getAPILabels()
+	// }
 
 	setApiVersion(version: string) {
 		this._apiversion = version
@@ -25,24 +25,21 @@ class F3dAPICompletion {
 
 	apiCompletionLabels(): CompletionItem[] {
 		let items:CompletionItem[] = []
-		this._apiparser.getAPILabels().forEach((v) => {
+		this._apiparser.getAPILabels().forEach((v, i) => {
 			items.push({
-				label: v,
+				label: v.label,
 				kind: CompletionItemKind.Text,
-				data: 1
+				data: i
 			})
 		})
 		return items
 	}
 
 	onApiCompletion(item: CompletionItem) {
-		// if (item.data === 1) {
-		// 	item.detail = '_File details';
-		// 	item.documentation = '_File documentation';
-		// } else if (item.data === 2) {
-		// 	item.detail = '_String details';
-		// 	item.documentation = '_String documentation';
-		// }
+		if (item.data) {
+			item.detail = item.label;
+			item.documentation = this._apiparser.getLabelDoc(item.data);
+		}
 	}
 }
 
