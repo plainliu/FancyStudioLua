@@ -36,7 +36,7 @@ class F3dAPICompletion {
 	}
 
 	onApiCompletion(item: CompletionItem) {
-		if (item.data) {
+		if (item.data != null) {
 			item.detail = this._apiparser.getLabelDetail(item.data);
 			item.documentation = this._apiparser.getLabelDoc(item.data);
 		}
