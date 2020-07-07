@@ -4,21 +4,38 @@ interface API_Class_Info {
 	brief:string,
 	detail?:string
 }
-interface API_Class_Constructor {
-	brief:string
-}
-interface API_Class_Normalvar {
+interface API_Class_Singleton {
+	apiname:string,
 	brief:string,
 	detail?:string
 }
+interface API_Class_Constructor {
+	brief:string
+}
+declare namespace Var_Type {
+	const cst = 1
+	const normal = 2
+	const readonly = 3
+}
+declare type Var_Type = 1 | 2 | 3;
+interface API_Class_Var {
+	apiname:string,
+	brief:string,
+	detail?:string,
+	// for func param type
+	type?:Var_Type
+}
+interface API_Class_Func {
+	apiname:string,
+	brief:string,
+	paramlist?:API_Class_Var[]
+}
 interface API_Class {
-	class?: API_Class_Info,
+	class: API_Class_Info,
 	constructor?:API_Class_Constructor[],
-	singleton?:Object,
-	constvar?:Array<Object>,
-	normalvar?:API_Class_Normalvar[],
-	staticfunc?:Object,
-	memberfunc?:Object
+	singleton?:API_Class_Singleton,
+	vars?:API_Class_Var[],
+	funcs?:API_Class_Func[],
 }
 
 interface APILabel{
@@ -55,10 +72,34 @@ class APIParser {
 		if (isFileSync(path)) {
 			let clientapi = JSON.parse(fs.readFileSync(path, "utf8")) as API_Class[];
 			clientapi.forEach((clsapi: API_Class) => {
-				if (clsapi.class) {
+				let clsname = clsapi.class.classname
+				labels.push({
+					label: clsname,
+					doc: clsapi.class.brief
+				})
+				if (clsapi.singleton) {
 					labels.push({
-						label:clsapi.class.classname,
-						doc:clsapi.class.brief
+						label: clsapi.singleton.apiname,
+						doc: clsapi.singleton.brief,
+						srcclass: clsname
+					})
+				}
+				if (clsapi.vars) {
+					clsapi.vars.forEach((varapi) => {
+						labels.push({
+							label: varapi.apiname,
+							doc: varapi.brief,
+							srcclass: clsname
+						})
+					})
+				}
+				if (clsapi.funcs) {
+					clsapi.funcs.forEach((func) => {
+						labels.push({
+							label: func.apiname,
+							doc: func.brief,
+							srcclass: clsname
+						})
 					})
 				}
 			})
@@ -80,10 +121,19 @@ class APIParser {
 		return []
 	}
 
+	getLabelDetail(index: number):string {
+		let api = this._apilist.get(this._apiversion)
+		let apilabel = api && api[index]
+		if (apilabel) {
+			return apilabel.srcclass ? apilabel.srcclass + ': ' + apilabel.label : apilabel.label;
+		}
+		return '暂无'
+	}
 	getLabelDoc(index: number):string {
 		let api = this._apilist.get(this._apiversion)
-		if (api) {
-			return api[index].doc;
+		let apilabel = api && api[index]
+		if (apilabel) {
+			return apilabel.doc;
 		}
 		return '待补充'
 	}

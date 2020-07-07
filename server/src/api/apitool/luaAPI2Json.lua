@@ -33,19 +33,102 @@ _File.writeString = function(name, str, format)
 	file:close()
 end
 
-local apis = {}
+local _APIParser = {}
+_APIParser.getFunction = function(self, func)
+	local paramlist = {}
+	for k, f in pairs(func.paramlist) do
+		table.insert(paramlist, {
+			type = k,
+			brief = f.brief,
+			detail = f.detail,
+		})
+	end
 
+	return {
+		apiname = func.apiname,
+		brief = func.brief,
+		paramlist = paramlist
+	}
+end
+_APIParser.getFunctions = function(self, luaapi)
+	if luaapi == nil then return nil end
+
+	local functions = {}
+
+	-- staticfunc
+	for f, funcs in pairs(luaapi.staticfunc or {}) do
+		for id, func in pairs(funcs) do
+			table.insert(functions, self:getFunction(func))
+		end
+	end
+
+	-- memberfunc
+	for f, funcs in pairs(luaapi.memberfunc or {}) do
+		for id, func in pairs(funcs) do
+			table.insert(functions, self:getFunction(func))
+		end
+	end
+	return functions
+end
+
+_APIParser.getVars = function(self, luaapi)
+	local vars = {}
+
+	-- readonlyvar
+	for k, var in pairs(luaapi.readonlyvar or {}) do
+		var.apiname = k
+		table.insert(vars, var)
+	end
+	-- constvar
+	for k, var in pairs(luaapi.constvar or {}) do
+		var.apiname = k
+		table.insert(vars, var)
+	end
+	-- normalvar
+	for k, var in pairs(luaapi.normalvar or {}) do
+		var.apiname = k
+		table.insert(vars, var)
+	end
+
+	return vars
+end
+_APIParser.getClassApi = function(self, luaapi, classname)
+	local classapi = {}
+
+	-- class
+	classapi.class = luaapi.class
+	classapi.class.classname = classname
+
+	-- constructor
+
+	-- singleton
+	local singleton = luaapi.singleton
+	if singleton then
+		for k, v in pairs(singleton) do
+			classapi.singleton = {
+				apiname = k,
+				brief = v.brief,
+				detail = v.detail,
+			}
+		end
+	end
+
+	classapi.vars = self:getVars(luaapi)
+
+	-- funcs
+	classapi.funcs = self:getFunctions(luaapi)
+	return classapi
+end
+
+local apis = {}
 _sys:enumFile(luaApiFolder, true, function(f)
 	if _sys:getExtention(f) ~= 'lua' then return end
 
 	local api = _dofile(luaApiFolder .. '\\' .. f)
 	if api == nil then return end
 
-	if api and api.class then
-		api.class.classname = _sys:getFileName(f, false, false)
-	end
-	table.insert(apis, api)
-	-- apis[_sys:getFileName(f, false, false)] = api
+	local cls = _APIParser:getClassApi(api, _sys:getFileName(f, false, false))
+	table.insert(apis, cls)
 end)
 
 local jsontxt = JSON.encode(apis)
