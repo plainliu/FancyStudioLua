@@ -28,7 +28,7 @@ class F3dAPICompletion {
 		this._apiparser.getAPILabels().forEach((v, i) => {
 			items.push({
 				label: v.label,
-				kind: CompletionItemKind.Text,
+				kind: v.labelkind,
 				data: i
 			})
 		})

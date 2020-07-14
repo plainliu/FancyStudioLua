@@ -1,3 +1,7 @@
+import {
+	CompletionItemKind,
+} from 'vscode-languageserver';
+
 import * as fs from 'fs';
 interface API_Class_Info {
 	classname:string,
@@ -43,6 +47,7 @@ interface APILabel{
 	doc:string,
 	srcclass?:string,
 	issingleton?:boolean,
+	labelkind:CompletionItemKind,
 };
 
 function isFileSync(aPath:string) {
@@ -76,14 +81,16 @@ class APIParser {
 				let clsname = clsapi.class.classname
 				labels.push({
 					label: clsname,
-					doc: clsapi.class.brief
+					doc: clsapi.class.brief,
+					labelkind:CompletionItemKind.Class,
 				})
 				if (clsapi.singleton) {
 					labels.push({
 						label: clsapi.singleton.apiname,
 						doc: clsapi.singleton.brief,
 						srcclass: clsname,
-						issingleton:true
+						issingleton:true,
+						labelkind:CompletionItemKind.Variable,
 					})
 				}
 				if (clsapi.vars) {
@@ -91,7 +98,8 @@ class APIParser {
 						labels.push({
 							label: varapi.apiname,
 							doc: varapi.brief,
-							srcclass: clsname
+							srcclass: clsname,
+							labelkind:CompletionItemKind.Field,
 						})
 					})
 				}
@@ -100,7 +108,8 @@ class APIParser {
 						labels.push({
 							label: func.apiname,
 							doc: func.brief,
-							srcclass: clsname
+							srcclass: clsname,
+							labelkind:CompletionItemKind.Method,
 						})
 					})
 				}
