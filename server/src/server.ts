@@ -89,12 +89,13 @@ connection.onInitialized(() => {
 // The FancyStudioLua settings
 interface FancyStudioLuaSettings {
 	isCheckF3dFormat: boolean;
+	isProvideF3dAPI:boolean;
 }
 
 // The global settings, used when the `workspace/configuration` request is not supported by the client.
 // Please note that this is not the case when using this server with the client provided in this example
 // but could happen with other clients.
-const defaultSettings: FancyStudioLuaSettings = { isCheckF3dFormat: true };
+const defaultSettings: FancyStudioLuaSettings = { isCheckF3dFormat: true, isProvideF3dAPI:true };
 let globalSettings: FancyStudioLuaSettings = defaultSettings;
 
 // Cache the settings of all open documents
@@ -104,15 +105,6 @@ connection.onDidChangeConfiguration(change => {
 	if (hasConfigurationCapability) {
 		// Reset all cached document settings
 		documentSettings.clear()
-
-		documents.all().forEach((document) => {
-			let settings = getDocumentSettings(document.uri);
-			settings.then((s) => {
-				if (s.isCheckF3dFormat === false) {
-					clearDocumentDiagnostics(document)
-				}
-			})
-		})
 	} else {
 		globalSettings = <FancyStudioLuaSettings>(
 			(change.settings.FancyStudioLua || defaultSettings)
@@ -152,7 +144,10 @@ documents.onDidChangeContent(change => {
 
 async function f3dValidateTextDocument(textDocument: TextDocument): Promise<void> {
 	let settings = await getDocumentSettings(textDocument.uri);
-	if (settings.isCheckF3dFormat === false) { return }
+	if (settings.isCheckF3dFormat === false) {
+		clearDocumentDiagnostics(textDocument)
+		return
+	}
 
 	let text = textDocument.getText();
 	let errs = f3dformatter.checkFormatErrorByFile(text)
@@ -185,11 +180,16 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+	async (_textDocumentPosition: TextDocumentPositionParams) => {
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		return f3dapicompletion.apiCompletionLabels();
+		let settings = await getDocumentSettings(_textDocumentPosition.textDocument.uri);
+		if (settings.isProvideF3dAPI) {
+			return f3dapicompletion.apiCompletionLabels();
+		} else {
+			return undefined;
+		}
 	}
 );
 
