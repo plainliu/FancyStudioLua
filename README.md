@@ -2,6 +2,8 @@
 
 FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode 插件。
 
+[开发文档](DevelopDoc.md)
+
 持续扩展功能中……
 
 ## 安装 (Install)
