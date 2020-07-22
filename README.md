@@ -27,7 +27,7 @@ FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode �
 
 - 新增引擎API提词功能
     - 默认打开，可在设置中关闭(Settings -> FancyStudioLua -> is Provide F3d API)
-    - API对应的引擎版本为：develop-v2333 (20200714)
+    - API对应的引擎版本为：develop-v27791 (20200722)
 
 ### 1.1.0
 
