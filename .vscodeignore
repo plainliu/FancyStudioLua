@@ -9,7 +9,7 @@ contributing.md
 .travis.yml
 **/test/**
 **/testFixture/**
-server/src/api/apitool/**
+server/src/tools/**
 client/node_modules/**
 !client/node_modules/vscode-jsonrpc/**
 !client/node_modules/vscode-languageclient/**

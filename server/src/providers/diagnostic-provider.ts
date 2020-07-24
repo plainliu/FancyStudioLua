@@ -52,7 +52,7 @@ var multiLineErrors:Array<ErrorPattern> = [
 	{name: '多个连续空行', luapattern: '%*line%d+%*%*line(%d+)%*%*line%d+%*', pattern: /(\*line(\d+)\*){3,}/g}
 ]
 
-class F3dFormatChecker{
+class DiagnosticProvider{
 	// private formatErrors:Array<string>
 	// private ignoreFile:Array<string>
 	// private ignoreFolder:Array<string>
@@ -162,4 +162,4 @@ class F3dFormatChecker{
 	output(){}
 }
 
-export default F3dFormatChecker
+export default DiagnosticProvider

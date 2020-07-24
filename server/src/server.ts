@@ -11,7 +11,6 @@ import {
 	InitializeParams,
 	DidChangeConfigurationNotification,
 	CompletionItem,
-	CompletionItemKind,
 	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
@@ -22,8 +21,8 @@ import {
 	TextDocument,
 } from 'vscode-languageserver-textdocument';
 
-import F3dFormatChecker from './f3dformatchecker';
-import F3dAPICompletion from './f3dAPICompletion';
+import DiagnosticProvider from './providers/diagnostic-provider';
+import CompletionProvider from './providers/completion-provider';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -31,8 +30,9 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. 
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-let f3dformatter = new F3dFormatChecker()
-let f3dapicompletion = new F3dAPICompletion()
+
+let mDiagnosticProvider = new DiagnosticProvider()
+let mCompletionProvider = new CompletionProvider()
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -150,7 +150,7 @@ async function f3dValidateTextDocument(textDocument: TextDocument): Promise<void
 	}
 
 	let text = textDocument.getText();
-	let errs = f3dformatter.checkFormatErrorByFile(text)
+	let errs = mDiagnosticProvider.checkFormatErrorByFile(text)
 
 	let diagnostics: Diagnostic[] = [];
 	errs.forEach((res) => {
@@ -186,7 +186,7 @@ connection.onCompletion(
 		// info and always provide the same completion items.
 		let settings = await getDocumentSettings(_textDocumentPosition.textDocument.uri);
 		if (settings.isProvideF3dAPI) {
-			return f3dapicompletion.apiCompletionLabels();
+			return mCompletionProvider.provideCompletions();
 		} else {
 			return undefined;
 		}
@@ -197,7 +197,7 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		f3dapicompletion.onApiCompletion(item);
+		mCompletionProvider.resolveCompletion(item);
 		return item;
 	}
 );
