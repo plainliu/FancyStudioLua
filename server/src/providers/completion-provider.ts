@@ -7,7 +7,8 @@ import {
 
 import { Position } from 'vscode-languageserver-textdocument';
 
-import APIParser from '../api/APIParser';
+
+import { APITypes, APIParser} from '../api/APIParser';
 
 class CompletionProvider {
 	private _apiversion: string = 'default'
@@ -28,7 +29,7 @@ class CompletionProvider {
 		}
 
 		let words = this.provideWordBasedCompletions(params.textDocument.uri, params.position)
-		return this.provideAPICompletions(params.textDocument.uri, params.position).concat(...words)
+		return this.provideAPICompletions(params.textDocument.uri, params.position, trigger).concat(...words)
 	}
 
 	resolveCompletion(item: CompletionItem) {
@@ -38,14 +39,23 @@ class CompletionProvider {
 		}
 	}
 
-	provideAPICompletions(textDocument:DocumentUri, position:Position): CompletionItem[] {
+	provideAPICompletions(textDocument:DocumentUri, position:Position, trigger:string): CompletionItem[] {
 		let items:CompletionItem[] = []
+		let apitype = 0
+		if (trigger === '.' || trigger === ':') {
+			apitype = (APITypes.Vars | APITypes.Func)
+		} else {
+			apitype = (APITypes.Class | APITypes.Singleton | APITypes.Vars | APITypes.Func)
+		}
+
 		this._apiparser.getAPILabels().forEach((v, i) => {
-			items.push({
-				label: v.label,
-				kind: v.labelkind,
-				data: i
-			})
+			if (v.type & apitype) {
+				items.push({
+					label: v.label,
+					kind: v.labelkind,
+					data: i
+				})
+			}
 		})
 		return items
 	}
@@ -63,7 +73,7 @@ class CompletionProvider {
 	getWords(documentUri:DocumentUri, position:Position): string[] {
 		const words: string[] = [];
 
-		words.push('TestABC')
+		// words.push('TestABC')
 
 		return words;
 	}

@@ -42,11 +42,19 @@ interface API_Class {
 	funcs?:API_Class_Func[],
 }
 
+const enum APITypes {
+	Class = 0b0001,
+	Singleton = 0b0010,
+	Vars = 0b0100,
+	Func = 0b1000,
+}
+
 interface APILabel{
 	label: string,
 	doc:string,
 	srcclass?:string,
 	issingleton?:boolean,
+	type:APITypes,
 	labelkind:CompletionItemKind,
 };
 
@@ -83,6 +91,7 @@ class APIParser {
 					label: clsname,
 					doc: clsapi.class.brief,
 					labelkind:CompletionItemKind.Class,
+					type: APITypes.Class,
 				})
 				if (clsapi.singleton) {
 					labels.push({
@@ -91,6 +100,7 @@ class APIParser {
 						srcclass: clsname,
 						issingleton:true,
 						labelkind:CompletionItemKind.Variable,
+						type: APITypes.Singleton,
 					})
 				}
 				if (clsapi.vars) {
@@ -100,6 +110,7 @@ class APIParser {
 							doc: varapi.brief,
 							srcclass: clsname,
 							labelkind:CompletionItemKind.Field,
+							type: APITypes.Vars,
 						})
 					})
 				}
@@ -110,6 +121,7 @@ class APIParser {
 							doc: func.brief,
 							srcclass: clsname,
 							labelkind:CompletionItemKind.Method,
+							type: APITypes.Func,
 						})
 					})
 				}
@@ -159,4 +171,4 @@ class APIParser {
 	}
 }
 
-export default APIParser
+export { APITypes, APIParser }
