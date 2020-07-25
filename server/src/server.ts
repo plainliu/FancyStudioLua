@@ -60,7 +60,8 @@ connection.onInitialize((params: InitializeParams) => {
 			textDocumentSync: TextDocumentSyncKind.Incremental,
 			// Tell the client that this server supports code completion.
 			completionProvider: {
-				resolveProvider: true
+				resolveProvider: true,
+				triggerCharacters: ['_', '.', ':']
 			}
 		}
 	};
@@ -180,13 +181,13 @@ connection.onDidChangeWatchedFiles(_change => {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	async (_textDocumentPosition: TextDocumentPositionParams) => {
+	async (completionparams) => {
 		// The pass parameter contains the position of the text document in
 		// which code complete got requested. For the example we ignore this
 		// info and always provide the same completion items.
-		let settings = await getDocumentSettings(_textDocumentPosition.textDocument.uri);
+		let settings = await getDocumentSettings(completionparams.textDocument.uri);
 		if (settings.isProvideF3dAPI) {
-			return mCompletionProvider.provideCompletions();
+			return mCompletionProvider.provideCompletions(completionparams);
 		} else {
 			return undefined;
 		}
