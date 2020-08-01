@@ -42,7 +42,9 @@ class CompletionProvider {
 	provideAPICompletions(textDocument:DocumentUri, position:Position, trigger:string): CompletionItem[] {
 		let items:CompletionItem[] = []
 		let apitype = 0
-		if (trigger === '.' || trigger === ':') {
+		if (trigger === ':') {
+			apitype = (APITypes.Func)
+		} else if (trigger === '.') {
 			apitype = (APITypes.Vars | APITypes.Func)
 		} else {
 			apitype = (APITypes.Class | APITypes.Singleton | APITypes.Vars | APITypes.Func)
