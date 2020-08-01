@@ -4,22 +4,17 @@ import {
 	CompletionParams,
 	DocumentUri,
 } from 'vscode-languageserver';
-
 import { Position } from 'vscode-languageserver-textdocument';
 
-
 import { APITypes, APIParser} from '../api/APIParser';
+import DocumentManager from '../DocumentHelper'
 
 class CompletionProvider {
-	private _apiversion: string = 'default'
 	private _apiparser: APIParser = new APIParser()
+	private mDocumentManager:DocumentManager;
 
-	constructor() {
-		console.log('CompletionProvider')
-	}
-
-	setApiVersion(version: string) {
-		this._apiversion = version
+	constructor(doc:DocumentManager) {
+		this.mDocumentManager = doc;
 	}
 
 	provideCompletions(params:CompletionParams): CompletionItem[] | undefined {
@@ -28,8 +23,7 @@ class CompletionProvider {
 			return undefined
 		}
 
-		let words = this.provideWordBasedCompletions(params.textDocument.uri, params.position)
-		return this.provideAPICompletions(params.textDocument.uri, params.position, trigger).concat(...words)
+		return this.provideAPICompletions(params.textDocument.uri, params.position, trigger)
 	}
 
 	resolveCompletion(item: CompletionItem) {
@@ -39,15 +33,35 @@ class CompletionProvider {
 		}
 	}
 
-	provideAPICompletions(textDocument:DocumentUri, position:Position, trigger:string): CompletionItem[] {
+	provideAPICompletions(textDocument:DocumentUri, position:Position, trigger:string): CompletionItem[] | undefined {
 		let items:CompletionItem[] = []
 		let apitype = 0
 		if (trigger === ':') {
 			apitype = (APITypes.Func)
 		} else if (trigger === '.') {
 			apitype = (APITypes.Vars | APITypes.Func)
-		} else {
-			apitype = (APITypes.Class | APITypes.Singleton | APITypes.Vars | APITypes.Func)
+		} else if (trigger === '_') {
+			let doc = this.mDocumentManager.getDocument(textDocument);
+			let text = doc?.getText()
+			// TODO:非单词边界
+			// 根据单词前是否有点和冒号决定是否提示API
+			// return undefined
+
+			// 单词边界
+			// 是全局的，前面不是 . 和 : ；
+			if (doc && position.character > 1) {
+				let before = doc.offsetAt({line: position.line, character: position.character - 2})
+				let c = text?.charAt(before)
+
+				if (c === '.') {
+					apitype = (APITypes.Vars | APITypes.Func)
+				} else if ( c === ':') {
+					apitype = (APITypes.Func)
+				}
+			}
+			if (apitype === 0) {
+				apitype = (APITypes.Class | APITypes.Singleton)
+			}
 		}
 
 		this._apiparser.getAPILabels().forEach((v, i) => {

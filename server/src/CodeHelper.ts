@@ -17,7 +17,7 @@ class CodeHelper {
 	constructor(doc:DocumentManager) {
 		console.log('CodeHelper')
 		this.mDocumentManager = doc;
-		this.mCompletionProvider = new CompletionProvider();
+		this.mCompletionProvider = new CompletionProvider(doc);
 		this.mDiagnosticProvider = new DiagnosticProvider();
 	}
 

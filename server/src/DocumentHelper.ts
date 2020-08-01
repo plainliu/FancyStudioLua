@@ -37,6 +37,10 @@ class DocumentManager {
 		this.documents.all().forEach(func);
 	}
 
+	getDocument(uri: string): TextDocument | undefined {
+		return this.documents.get(uri);
+	}
+
 	getDocumentSettings(resource: string): Thenable<FancyStudioLuaSettings> {
 		if (!this.clientEnv.hasConfigurationCapability) {
 			return Promise.resolve(globalSettings);
