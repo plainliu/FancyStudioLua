@@ -1,35 +1,51 @@
-import { CompletionItem, Connection, Diagnostic, DiagnosticSeverity, Position } from 'vscode-languageserver';
+import {
+	CompletionItem,
+	Diagnostic,
+	DiagnosticSeverity,
+	Position
+} from 'vscode-languageserver';
 import CompletionProvider from './providers/completion-provider';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import DiagnosticProvider from './providers/diagnostic-provider';
+import DocumentManager from './DocumentHelper'
 
 class CodeHelper {
-	private connection: Connection;
-	private mCompletionProvider:CompletionProvider | undefined;
-	private mDiagnosticProvider:DiagnosticProvider | undefined;
+	private mDocumentManager:DocumentManager;
+	private mCompletionProvider:CompletionProvider;
+	private mDiagnosticProvider:DiagnosticProvider;
 
-	constructor(connection: Connection) {
+	constructor(doc:DocumentManager) {
 		console.log('CodeHelper')
-		this.connection = connection
+		this.mDocumentManager = doc;
 		this.mCompletionProvider = new CompletionProvider();
 		this.mDiagnosticProvider = new DiagnosticProvider();
 	}
 
-	onCompletion(params:any) {
-		return this.mCompletionProvider?.provideCompletions(params)
+	async onCompletion(params:any) {
+		let settings = await this.mDocumentManager.getDocumentSettings(params.textDocument.uri);
+		if (settings.isProvideF3dAPI) {
+			return this.mCompletionProvider.provideCompletions(params);
+		}
+		return undefined;
 	}
 
 	onCompletionResolve(item:CompletionItem): CompletionItem {
-		this.mCompletionProvider?.resolveCompletion(item);
+		this.mCompletionProvider.resolveCompletion(item);
 		return item;
 	}
 
 	async ValidateTextDocument(textDocument: TextDocument): Promise<void> {
+		let settings = await this.mDocumentManager.getDocumentSettings(textDocument.uri);
+		if (settings.isCheckF3dFormat === false) {
+			this.mDocumentManager.clearDocumentDiagnostics(textDocument)
+			return
+		}
+
 		let text = textDocument.getText();
-		let errs = this.mDiagnosticProvider?.checkFormatErrorByFile(text)
+		let errs = this.mDiagnosticProvider.checkFormatErrorByFile(text)
 
 		let diagnostics: Diagnostic[] = [];
-		errs?.forEach((res) => {
+		errs.forEach((res) => {
 			let diagnostic: Diagnostic = {
 				severity: DiagnosticSeverity.Warning, 
 				range: {
@@ -41,12 +57,11 @@ class CodeHelper {
 			};
 			diagnostics.push(diagnostic);
 		})
-		this.connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+		this.mDocumentManager.sendDiagnostics(textDocument, diagnostics);
 	}
-
-	async clearDocumentDiagnostics(textDocument: TextDocument): Promise<void> {
-		let diagnostics: Diagnostic[] = [];
-		this.connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+	onDidChangeConfiguration(change: any) {
+		this.mDocumentManager.onChangeConfiguration(change);
+		this.mDocumentManager.forEachDocument(this.ValidateTextDocument);
 	}
 }
 
