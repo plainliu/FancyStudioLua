@@ -5,16 +5,12 @@
 import {
 	createConnection,
 	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
 	DidChangeConfigurationNotification,
 	CompletionItem,
-	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	Position
 } from 'vscode-languageserver';
 
 import {
@@ -22,8 +18,8 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import DiagnosticProvider from './providers/diagnostic-provider';
-import CompletionProvider from './providers/completion-provider';
 
+import CodeHelper from './CodeHelper'
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
@@ -31,8 +27,7 @@ let connection = createConnection(ProposedFeatures.all);
 // Create a simple text document manager. 
 let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
-let mDiagnosticProvider = new DiagnosticProvider()
-let mCompletionProvider = new CompletionProvider()
+let mCodeHelper = new CodeHelper(connection)
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -133,7 +128,7 @@ function getDocumentSettings(resource: string): Thenable<FancyStudioLuaSettings>
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
-	clearDocumentDiagnostics(e.document)
+	mCodeHelper.clearDocumentDiagnostics(e.document)
 	documentSettings.delete(e.document.uri);
 });
 
@@ -146,32 +141,11 @@ documents.onDidChangeContent(change => {
 async function f3dValidateTextDocument(textDocument: TextDocument): Promise<void> {
 	let settings = await getDocumentSettings(textDocument.uri);
 	if (settings.isCheckF3dFormat === false) {
-		clearDocumentDiagnostics(textDocument)
+		mCodeHelper.clearDocumentDiagnostics(textDocument)
 		return
 	}
 
-	let text = textDocument.getText();
-	let errs = mDiagnosticProvider.checkFormatErrorByFile(text)
-
-	let diagnostics: Diagnostic[] = [];
-	errs.forEach((res) => {
-		let diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Warning,
-			range: {
-				start: Position.create(res.line, res.col),
-				end: Position.create(res.line, res.col)
-			},
-			message: `${res.err}`,
-			source: 'f3dlua'
-		};
-		diagnostics.push(diagnostic);
-	})
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-}
-
-async function clearDocumentDiagnostics(textDocument: TextDocument):Promise<void> {
-	let diagnostics: Diagnostic[] = [];
-	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+	mCodeHelper.ValidateTextDocument(textDocument)
 }
 
 connection.onDidChangeWatchedFiles(_change => {
@@ -187,7 +161,7 @@ connection.onCompletion(
 		// info and always provide the same completion items.
 		let settings = await getDocumentSettings(completionparams.textDocument.uri);
 		if (settings.isProvideF3dAPI) {
-			return mCompletionProvider.provideCompletions(completionparams);
+			return mCodeHelper.onCompletion(completionparams);
 		} else {
 			return undefined;
 		}
@@ -198,8 +172,7 @@ connection.onCompletion(
 // the completion list.
 connection.onCompletionResolve(
 	(item: CompletionItem): CompletionItem => {
-		mCompletionProvider.resolveCompletion(item);
-		return item;
+		return mCodeHelper.onCompletionResolve(item);
 	}
 );
 
