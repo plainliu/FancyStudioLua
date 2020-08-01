@@ -23,9 +23,13 @@ FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode �
 
 ## 更新说明 (Release Notes)
 
+### 1.2.1
+
+- 修复 `/` 后缺少空格诊断信息缺失的问题
+
 ### 1.2.0
 
-- 新增引擎API提词功能
+- 新增引擎客户端API提词功能
     - 默认打开，可在设置中关闭(Settings -> FancyStudioLua -> is Provide F3d API)
     - API对应的引擎版本为：develop-v27791 (20200722)
     - `.` 和 `:` 触发API属性方法提示； `_` 触发API提示

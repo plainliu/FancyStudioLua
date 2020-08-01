@@ -33,7 +33,7 @@ var singleLineErrors:Array<ErrorPattern> = [
 	{name: '*前缺少空格', luapattern: '[^ ]%*', pattern: /[^ ]\*/g},
 	{name: '*后缺少空格', luapattern: '%*[^ ]', pattern: /\*[^ ]/g},
 	{name: '/前缺少空格', luapattern: '[^ ]/', pattern: /[^ ]\//g},
-	{name: '/后缺少空格', luapattern: '/[^ ]', pattern: /[^ ]\//g},
+	{name: '/后缺少空格', luapattern: '/[^ ]', pattern: /\/[^ ]/g},
 	{name: '>前缺少空格', luapattern: '[^ ]>', pattern: /[^ ]\>/g},
 	{name: '>后缺少空格', luapattern: '>[^ =]', pattern: /\>[^ =]/g},
 	{name: '<前缺少空格', luapattern: '[^ ]<', pattern: /[^ ]</g},
