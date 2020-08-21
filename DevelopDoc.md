@@ -67,3 +67,65 @@ Reload Window
     └── src
         └── server.ts       // 服务端入口
 ```
+
+## API数据
+
+来源：F3D API 编辑器进行了功能扩展，扫描API后生成JSON数据
+
+格式：
+
+```json
+{
+    "global": [
+        {
+            "name": "_dofile",
+            "brief": "xxx"
+        }
+    ],
+    "classes": [{}]
+}
+
+// class
+{
+    "class": {
+        "name": "_System",
+        "brief": "xxx"
+    },
+    "vars": [{}],
+    "functions": [{}],
+}
+
+// var
+// readonlyvar/constvar/normalvar
+{
+    "type": "readonly/const/normal",
+    "name": "fpsLimit",
+    "brief": "xxx",
+}
+
+// function
+// staticfunc/memberfunc
+{
+    "type": "static/member",
+    "name": "getGlobal",
+    "uniquename": "getGlobal [1]",
+    "brief": "xxxx",
+    "params":[{}],
+    "ret":[{}]
+}
+
+// param
+{
+    "type": "number/bool/string/_Vector3",
+    "name": "p1",
+    "brief": "xxx",
+    "isopt": true
+}
+
+// ret
+{
+    "type": "number/bool/string/_Vector3",
+    "name": "ret",
+    "brief": "xxx"
+}
+```
