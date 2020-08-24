@@ -129,3 +129,18 @@ Reload Window
     "brief": "xxx"
 }
 ```
+
+显示
+
+detail
+```
+_System:func [1]
+```
+
+document
+```
+静态方法/成员方法
+文档功能说明
+参数
+返回
+```
