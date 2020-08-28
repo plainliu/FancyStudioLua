@@ -59,6 +59,11 @@ class CodeHelper {
 		})
 		this.mDocumentManager.sendDiagnostics(textDocument, diagnostics);
 	}
+
+	getTextDocument(uri: string): TextDocument | undefined {
+		return this.mDocumentManager.getDocument(uri);
+	}
+
 	onDidChangeConfiguration(change: any) {
 		this.mDocumentManager.onChangeConfiguration(change);
 		this.mDocumentManager.forEachDocument(this.ValidateTextDocument);

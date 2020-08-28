@@ -50,6 +50,7 @@ class CompletionProvider {
 			// 单词边界
 			// 是全局的，前面不是 . 和 : ；
 			if (doc && position.character > 1) {
+				// -2位置 换成单词前
 				let before = doc.offsetAt({line: position.line, character: position.character - 2})
 				let c = text?.charAt(before)
 
