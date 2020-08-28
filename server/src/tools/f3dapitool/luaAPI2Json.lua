@@ -6,7 +6,7 @@
 local JSON = _dofile("json.lua")
 assert(JSON)
 
-local luaApiFolder = [[D:\develop\fancy-3d\Description]]
+local luaApiFolder = [[F:\develop\fancy-3d\Description]]
 local targetApiTag = 'default'
 
 assert(_sys:folderExist(luaApiFolder), '文件夹不存在')
