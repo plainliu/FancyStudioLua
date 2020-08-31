@@ -29,6 +29,7 @@ FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode �
 
 - 优化客户端API提词
     - `:` 只提示方法
+    - 优化非单词边界的 `_` 补全
 
 - 更新API版本
     - 至 develop-v28250 (20200828)

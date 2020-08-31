@@ -40,14 +40,6 @@ class CompletionProvider {
 			apitype = (APITypes.Func)
 		} else if (trigger === '.') {
 			apitype = (APITypes.Vars | APITypes.Func)
-		} else {
-			apitype = (APITypes.Class | APITypes.Singleton | APITypes.Vars | APITypes.Func)
-		}
-		/*
-		if (trigger === ':') {
-			apitype = (APITypes.Func)
-		} else if (trigger === '.') {
-			apitype = (APITypes.Vars | APITypes.Func)
 		} else if (trigger === '_') {
 			let doc = this.mDocumentManager.getDocument(textDocument);
 			let text = doc?.getText()
@@ -72,7 +64,6 @@ class CompletionProvider {
 				apitype = (APITypes.Class | APITypes.Singleton)
 			}
 		}
-		*/
 
 		this._apiparser.getAPILabels().forEach((v, i) => {
 			if (v.type & apitype) {
