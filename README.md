@@ -23,6 +23,11 @@ FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode �
 
 ## 更新说明 (Release Notes)
 
+### 1.2.2
+
+- 更新API版本
+    - 至 develop-v31157 (20210112)
+
 ### 1.2.1
 
 - 修复 `/` 后缺少空格诊断信息缺失的问题
