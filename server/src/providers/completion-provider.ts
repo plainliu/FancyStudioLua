@@ -3,6 +3,7 @@ import {
 	CompletionItemKind,
 	CompletionParams,
 	DocumentUri,
+	InsertTextFormat,
 } from 'vscode-languageserver';
 import { Position } from 'vscode-languageserver-textdocument';
 
@@ -30,6 +31,10 @@ class CompletionProvider {
 		if (item.data != null) {
 			item.detail = this._apiparser.getLabelDetail(item.data);
 			item.documentation = this._apiparser.getLabelDoc(item.data);
+			if (item.kind === CompletionItemKind.Method) {
+				item.insertTextFormat = InsertTextFormat.Snippet;
+				item.insertText = this._apiparser.getLabelSnippet(item.data);
+			}
 		}
 	}
 

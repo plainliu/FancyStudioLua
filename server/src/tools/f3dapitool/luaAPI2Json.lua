@@ -36,13 +36,27 @@ end
 local _APIParser = {}
 _APIParser.getFunction = function(self, func)
 	local paramlist = {}
+	local maxid = 0
+	print("start")
 	for k, f in pairs(func.paramlist) do
-		table.insert(paramlist, {
+		-- table.insert(paramlist, {
+		-- 	type = k,
+		-- 	brief = f.brief,
+		-- 	detail = f.detail,
+		-- })
+		assert(f.id, "[ParamNoId] " .. k)
+		print(f.id, k)
+		paramlist[f.id] = {
 			type = k,
 			brief = f.brief,
 			detail = f.detail,
-		})
+		}
+		maxid = maxid > f.id and maxid or f.id
 	end
+	-- for i, v in ipairs(paramlist) do
+	-- 	print(i, v.type)
+	-- end
+	assert(maxid == #paramlist, func.apiname .. ": " .. maxid .. "!=" .. #paramlist)
 
 	return {
 		apiname = func.apiname,
@@ -121,7 +135,7 @@ _APIParser.getClassApi = function(self, luaapi, classname)
 end
 
 local apis = {}
-_sys:enumFile(luaApiFolder, true, function(f)
+local function readClassDesc(f)
 	if _sys:getExtention(f) ~= 'lua' then return end
 
 	local api = _dofile(luaApiFolder .. '\\' .. f)
@@ -129,7 +143,22 @@ _sys:enumFile(luaApiFolder, true, function(f)
 
 	local cls = _APIParser:getClassApi(api, _sys:getFileName(f, false, false))
 	table.insert(apis, cls)
-end)
+end
+-- _sys:enumFile(luaApiFolder, true, function(f)
+-- 	readClassDesc(f)
+-- end)
+
+local function enumCfg(classconfig, func)
+	local classes = _dofile(classconfig)
+	for i, class in ipairs(classes) do
+		local classname = class:gsub("Fancy(.-)%.cpp", function(s)
+			return "_" .. s
+		end)
+		print(classname)
+		func(classname .. ".lua")
+	end
+end
+enumCfg("config.lua", readClassDesc)
 
 local jsontxt = JSON.encode(apis)
 _File.writeString('client.json', jsontxt)

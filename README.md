@@ -23,6 +23,15 @@ FancyStudioLua 是能够为 FancyStudio Lua 开发提供智能帮助的 VSCode �
 
 ## 更新说明 (Release Notes)
 
+### 1.2.3
+
+- 升级函数补全功能
+    - 新增snippets补全
+    - 新增参数说明文档
+
+- 更新API版本
+    - 至 develop-v35911 (20211124)
+
 ### 1.2.2
 
 - 更新API版本

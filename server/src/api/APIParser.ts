@@ -1,5 +1,7 @@
 import {
 	CompletionItemKind,
+	MarkupContent,
+	MarkupKind,
 } from 'vscode-languageserver';
 
 import * as fs from 'fs';
@@ -51,11 +53,14 @@ const enum APITypes {
 
 interface APILabel{
 	label: string,
-	doc:string,
 	srcclass?:string,
 	issingleton?:boolean,
 	type:APITypes,
 	labelkind:CompletionItemKind,
+	documentation: string | MarkupContent,
+
+	// for function
+	snippet?:string,
 };
 
 function isFileSync(aPath:string) {
@@ -89,14 +94,14 @@ class APIParser {
 				let clsname = clsapi.class.classname
 				labels.push({
 					label: clsname,
-					doc: clsapi.class.brief,
+					documentation: clsapi.class.brief,
 					labelkind:CompletionItemKind.Class,
 					type: APITypes.Class,
 				})
 				if (clsapi.singleton) {
 					labels.push({
 						label: clsapi.singleton.apiname,
-						doc: clsapi.singleton.brief,
+						documentation: clsapi.singleton.brief,
 						srcclass: clsname,
 						issingleton:true,
 						labelkind:CompletionItemKind.Variable,
@@ -107,7 +112,7 @@ class APIParser {
 					clsapi.vars.forEach((varapi) => {
 						labels.push({
 							label: varapi.apiname,
-							doc: varapi.brief,
+							documentation: varapi.brief,
 							srcclass: clsname,
 							labelkind:CompletionItemKind.Field,
 							type: APITypes.Vars,
@@ -116,18 +121,60 @@ class APIParser {
 				}
 				if (clsapi.funcs) {
 					clsapi.funcs.forEach((func) => {
-						labels.push({
-							label: func.apiname,
-							doc: func.brief,
-							srcclass: clsname,
-							labelkind:CompletionItemKind.Method,
-							type: APITypes.Func,
-						})
+						let f = this.analyzeFunctionCompletion(func)
+						f.srcclass = clsname
+						labels.push(f)
 					})
 				}
 			})
 		}
 		return labels
+	}
+
+	analyzeFunctionCompletion(func : API_Class_Func): APILabel {
+		// func(${1:v})
+		let snippet = func.apiname
+		let funtionstr = func.apiname
+		let paramsdetail = ""
+		snippet += "(";
+		funtionstr += "(";
+		if (func.paramlist) {
+			for(let i = 0; i < func.paramlist.length; i++) {
+				let paramname = func.paramlist[i].type
+				let paramid = i + 1
+				snippet += ("${" + paramid + ":" + paramname + "}")
+				funtionstr += paramname
+				paramsdetail += "(p" + paramid + ") " + paramname + ": " + func.paramlist[i].brief
+				if (i != func.paramlist.length - 1)
+				{
+					snippet += ", "
+					funtionstr += ", "
+					paramsdetail += "\n"
+				}
+			}
+		}
+		snippet += ")"
+		funtionstr += ")"
+
+		
+		let markdown : MarkupContent = {
+			kind: MarkupKind.Markdown,
+			value: [
+				func.brief,
+				"```lua",
+				funtionstr,
+				paramsdetail,
+				"```",
+			].join("\n")
+		};
+
+		return {
+			label: func.apiname,
+			labelkind: CompletionItemKind.Method,
+			type: APITypes.Func,
+			snippet: snippet,
+			documentation: markdown
+		}
 	}
 
 	getAPILabels(): APILabel[] {
@@ -160,14 +207,25 @@ class APIParser {
 		}
 		return '暂无'
 	}
-	getLabelDoc(index: number):string {
+	getLabelDoc(index: number): MarkupContent | string {
+		let api = this._apilist.get(this._apiversion)
+
+		let apilabel = api && api[index]
+		if (apilabel) {
+			return apilabel.documentation
+		}
+		return "待补充"
+	}
+	getLabelSnippet(index: number):string {
 		let api = this._apilist.get(this._apiversion)
 		let apilabel = api && api[index]
 		if (apilabel) {
-			// TODO: 参数信息
-			return apilabel.doc;
+			if (apilabel.labelkind === CompletionItemKind.Method && apilabel.snippet)
+				return apilabel.snippet;
+			else
+				return apilabel.label;
 		}
-		return '待补充'
+		return "";
 	}
 }
 
